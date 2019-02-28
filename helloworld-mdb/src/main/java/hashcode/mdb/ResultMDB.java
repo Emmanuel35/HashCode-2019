@@ -14,45 +14,75 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.quickstarts.mdb;
+package hashcode.mdb;
 
 import java.util.logging.Logger;
+
+import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
+import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
+import javax.inject.Inject;
+import javax.jms.JMSDestinationDefinition;
+import javax.jms.JMSDestinationDefinitions;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.jms.Queue;
 import javax.jms.TextMessage;
+
+import hashcode.model.ConvertModel;
 
 /**
  * <p>
- * A simple Message Driven Bean that asynchronously receives and processes the messages that are sent to the topic.
+ * A simple Message Driven Bean that asynchronously receives and processes the messages that are sent to the queue.
  * </p>
  *
  * @author Serge Pagop (spagop@redhat.com)
  */
-@MessageDriven(name = "HelloWorldQTopicMDB", activationConfig = {
-        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "topic/HELLOWORLDMDBTopic"),
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
+@JMSDestinationDefinitions(
+	    value = {
+	        @JMSDestinationDefinition(
+	            name = "java:/queue/RESULT",
+	            interfaceName = "javax.jms.Queue",
+	            destinationName = "ResultQueue"
+	        )
+	    }
+	)
+
+@MessageDriven(name = "ResultMDB", activationConfig = {
+        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "queue/RESULT"),
+        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")})
-public class HelloWorldTopicMDB implements MessageListener {
+public class ResultMDB implements MessageListener {
 
-    private static final Logger LOGGER = Logger.getLogger(HelloWorldTopicMDB.class.toString());
+    private static final Logger LOGGER = Logger.getLogger(ResultMDB.class.toString());
 
+    @EJB
+    private ConvertModel convert;
+    
     /**
      * @see MessageListener#onMessage(Message)
      */
     public void onMessage(Message rcvMessage) {
         TextMessage msg = null;
-        try {
+        try {        	
             if (rcvMessage instanceof TextMessage) {
                 msg = (TextMessage) rcvMessage;
-                LOGGER.info("Received Message from topic: " + msg.getText());
+                LOGGER.info("Received Message: " + msg.getJMSMessageID());
+                LOGGER.info("FIN pour: " + msg.getText());
             } else {
                 LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
             }
         } catch (JMSException e) {
             throw new RuntimeException(e);
         }
+        
+       try {
+		Thread.sleep(Math.round((Math.random()*10000)));
+	} catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
     }
 }

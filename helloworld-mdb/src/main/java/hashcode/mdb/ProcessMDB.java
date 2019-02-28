@@ -14,15 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.quickstarts.mdb;
+package hashcode.mdb;
 
 import java.util.logging.Logger;
+
+import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
+import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
+import javax.inject.Inject;
+import javax.jms.JMSContext;
+import javax.jms.JMSDestinationDefinition;
+import javax.jms.JMSDestinationDefinitions;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.jms.Queue;
 import javax.jms.TextMessage;
+import javax.xml.bind.JAXBException;
+
+import hashcode.model.ConvertModel;
+import hashcode.model.Structure;
 
 /**
  * <p>
@@ -31,27 +43,58 @@ import javax.jms.TextMessage;
  *
  * @author Serge Pagop (spagop@redhat.com)
  */
-@MessageDriven(name = "HelloWorldQueueMDB", activationConfig = {
-        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "queue/HELLOWORLDMDBQueue"),
+@JMSDestinationDefinitions(
+	    value = {
+	        @JMSDestinationDefinition(
+	            name = "java:/queue/HELLOWORLD",
+	            interfaceName = "javax.jms.Queue",
+	            destinationName = "HelloWorldQueue"
+	        )
+	    }
+	)
+
+@MessageDriven(name = "ProcessMDB", activationConfig = {
+        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "queue/HELLOWORLD"),
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")})
-public class HelloWorldQueueMDB implements MessageListener {
+public class ProcessMDB 
+	implements MessageListener {
 
-    private static final Logger LOGGER = Logger.getLogger(HelloWorldQueueMDB.class.toString());
+    private static final Logger LOGGER = Logger.getLogger(ProcessMDB.class.toString());
 
+    @Resource(lookup = "java:/queue/HELLOWORLD")
+    private Queue process;
+    
+    @EJB
+    private ConvertModel convert;
+    
+    @Resource(lookup = "java:/queue/RESULT")
+    private Queue result;
+    
+    @Inject
+    private JMSContext context;
+    
     /**
      * @see MessageListener#onMessage(Message)
      */
     public void onMessage(Message rcvMessage) {
         TextMessage msg = null;
         try {
+        	
             if (rcvMessage instanceof TextMessage) {
                 msg = (TextMessage) rcvMessage;
-                LOGGER.info("Received Message from queue: " + msg.getText());
+                LOGGER.info("Received Message: " + msg.getJMSMessageID());
+
+                Structure struct = convert.toObject(msg.getText(), Structure.class);
+                struct.setReinject(struct.getReinject()-1);
+                if (struct.getReinject() > 0)
+                	context.createProducer().send(process, convert.toString(struct));
+                else
+                	context.createProducer().send(result, convert.toString(struct));
             } else {
                 LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
             }
-        } catch (JMSException e) {
+        } catch (JMSException | JAXBException e) {
             throw new RuntimeException(e);
         }
         
