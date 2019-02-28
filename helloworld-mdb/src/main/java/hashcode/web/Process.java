@@ -16,31 +16,20 @@
  */
 package hashcode.web;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.inject.Inject;
-import javax.jms.Destination;
 import javax.jms.JMSContext;
 import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 
-import hashcode.mdb.ProcessMDB;
 import hashcode.model.ConvertModel;
 import hashcode.model.Structure;
 

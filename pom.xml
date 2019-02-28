@@ -389,7 +389,6 @@
             <modules>
                 
                 <module>helloworld-mdb</module>
-                
                 <module>messaging-clustering</module>
                 
             </modules>

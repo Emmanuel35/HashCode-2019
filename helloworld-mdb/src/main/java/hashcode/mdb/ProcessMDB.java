@@ -39,74 +39,65 @@ import hashcode.model.Structure;
 
 /**
  * <p>
- * A simple Message Driven Bean that asynchronously receives and processes the messages that are sent to the queue.
+ * A simple Message Driven Bean that asynchronously receives and processes the
+ * messages that are sent to the queue.
  * </p>
  *
  * @author Serge Pagop (spagop@redhat.com)
  */
-@JMSDestinationDefinitions(
-	    value = {
-	        @JMSDestinationDefinition(
-	            name = "java:/queue/HELLOWORLD",
-	            interfaceName = "javax.jms.Queue",
-	            destinationName = "HelloWorldQueue"
-	        )
-	    }
-	)
+@JMSDestinationDefinitions(value = {
+		@JMSDestinationDefinition(name = "java:/queue/HELLOWORLD", interfaceName = "javax.jms.Queue", destinationName = "HelloWorldQueue") })
 
 @MessageDriven(name = "ProcessMDB", activationConfig = {
-        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "queue/HELLOWORLD"),
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
-        @ActivationConfigProperty( propertyName = "maxSession", propertyValue = "100")})
-public class ProcessMDB 
-	implements MessageListener {
+		@ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "queue/HELLOWORLD"),
+		@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+		@ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+		@ActivationConfigProperty(propertyName = "maxSession", propertyValue = "100") })
+public class ProcessMDB implements MessageListener {
 
 	private Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
-    @Resource(lookup = "java:/queue/HELLOWORLD")
-    private Queue process;
-    
-    private ConvertModel convert = new ConvertModel();
-    
-    @Resource(lookup = "java:/queue/RESULT")
-    private Queue result;
-    
-    @Inject
-    private JMSContext context;
-    
-    /**
-     * @see MessageListener#onMessage(Message)
-     */
-    public void onMessage(Message rcvMessage) {
-        TextMessage msg = null;
-        try {
-        	
-            if (rcvMessage instanceof TextMessage) {
-                msg = (TextMessage) rcvMessage;
-                LOGGER.info("Received Message: " + msg.getJMSCorrelationID());
-                
-                Structure struct = convert.toObject(msg.getText(), Structure.class);
-                if (struct.getPhotos().size() > 0)
-                	context.createProducer()
-                		.setJMSCorrelationID(msg.getJMSCorrelationID())
-                		.send(process, convert.toString(struct));
-                else
-                	context.createProducer()
-                		.setJMSCorrelationID(msg.getJMSCorrelationID())
-                		.send(result, convert.toString(struct));
-            } else {
-                LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
-            }
-        } catch (JMSException | JAXBException e) {
-            throw new RuntimeException(e);
-        }
-        
-       try {
-		Thread.sleep(Math.round((Math.random()*10000)));
-	} catch (InterruptedException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+	@Resource(lookup = "java:/queue/HELLOWORLD")
+	private Queue process;
+
+	private ConvertModel convert = new ConvertModel();
+
+	@Resource(lookup = "java:/queue/RESULT")
+	private Queue result;
+
+	@Inject
+	private JMSContext context;
+
+	/**
+	 * @see MessageListener#onMessage(Message)
+	 */
+	public void onMessage(Message rcvMessage) {
+		TextMessage msg = null;
+		try {
+
+			if (rcvMessage instanceof TextMessage) {
+				msg = (TextMessage) rcvMessage;
+				LOGGER.info("Received Message: " + msg.getJMSCorrelationID());
+
+				Structure struct = convert.toObject(msg.getText(), Structure.class);
+				if (struct.getPhotos().size() > 0)
+					context.createProducer().setJMSCorrelationID(msg.getJMSCorrelationID()).send(process,
+							convert.toString(struct));
+				else
+					context.createProducer().setJMSCorrelationID(msg.getJMSCorrelationID()).send(result,
+							convert.toString(struct));
+			} else {
+				LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
+			}
+		} catch (JMSException | JAXBException e) {
+			throw new RuntimeException(e);
+		}
+
+		try {
+			Thread.sleep(Math.round((Math.random() * 10000)));
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
-    }
 }

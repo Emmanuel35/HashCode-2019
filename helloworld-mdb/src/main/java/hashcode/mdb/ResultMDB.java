@@ -16,6 +16,11 @@
  */
 package hashcode.mdb;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.logging.Logger;
 
 import javax.ejb.ActivationConfigProperty;
@@ -29,61 +34,61 @@ import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.io.IOUtils;
+
 import hashcode.model.ConvertModel;
 import hashcode.model.Structure;
 
 /**
  * <p>
- * A simple Message Driven Bean that asynchronously receives and processes the messages that are sent to the queue.
+ * A simple Message Driven Bean that asynchronously receives and processes the
+ * messages that are sent to the queue.
  * </p>
  *
  * @author Serge Pagop (spagop@redhat.com)
  */
-@JMSDestinationDefinitions(
-	    value = {
-	        @JMSDestinationDefinition(
-	            name = "java:/queue/RESULT",
-	            interfaceName = "javax.jms.Queue",
-	            destinationName = "ResultQueue"
-	        )
-	    }
-	)
+@JMSDestinationDefinitions(value = {
+		@JMSDestinationDefinition(name = "java:/queue/RESULT", interfaceName = "javax.jms.Queue", destinationName = "ResultQueue") })
 
 @MessageDriven(name = "ResultMDB", activationConfig = {
-        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "queue/RESULT"),
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
-        @ActivationConfigProperty( propertyName = "maxSession", propertyValue = "10")})
+		@ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "queue/RESULT"),
+		@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+		@ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+		@ActivationConfigProperty(propertyName = "maxSession", propertyValue = "10") })
 public class ResultMDB implements MessageListener {
 
-    private Logger LOGGER = Logger.getLogger(this.getClass().getName());
+	private Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
-    private ConvertModel convert = new ConvertModel();
-    
-    /**
-     * @see MessageListener#onMessage(Message)
-     */
-    public void onMessage(Message rcvMessage) {
-        TextMessage msg = null;
-        try {        	
-            if (rcvMessage instanceof TextMessage) {
-                msg = (TextMessage) rcvMessage;
-                LOGGER.info("Received Message: " + msg.getJMSCorrelationID());
-                LOGGER.info("FIN pour: " + msg.getText());
-                Structure struct = convert.toObject(msg.getText(), Structure.class);
-                convert.toFile(struct, "c:/Hascode/"+struct.getScore()+"-"+msg.getJMSCorrelationID()+".xml");
-            } else {
-                LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
-            }
-        } catch (JMSException | JAXBException e) {
-            throw new RuntimeException(e);
-        }
-        
-       try {
-		Thread.sleep(Math.round((Math.random()*10000)));
-	} catch (InterruptedException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+	private ConvertModel convert = new ConvertModel();
+
+	/**
+	 * @see MessageListener#onMessage(Message)
+	 */
+	public void onMessage(Message rcvMessage) {
+		TextMessage msg = null;
+		try {
+			if (rcvMessage instanceof TextMessage) {
+				msg = (TextMessage) rcvMessage;
+				LOGGER.info("Received Message: " + msg.getJMSCorrelationID());
+				LOGGER.info("FIN pour: " + msg.getText());
+				Structure struct = convert.toObject(msg.getText(), Structure.class);
+				try (BufferedOutputStream out = IOUtils.buffer(new FileOutputStream(new File(
+						"c:/Hascode/result_" + struct.getScore() + "-" + msg.getJMSCorrelationID() + ".txt")))) {
+					IOUtils.write(struct.getSlides().size() + "\r\n", out, Charset.defaultCharset());
+					IOUtils.writeLines(struct.getSlides(), "\r\n", out, Charset.defaultCharset());
+				}
+			} else {
+				LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
+			}
+		} catch (JMSException | JAXBException | IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		try {
+			Thread.sleep(Math.round((Math.random() * 10000)));
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
-    }
 }
