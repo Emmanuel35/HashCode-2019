@@ -100,7 +100,6 @@ public class Process {
     public void start(Structure structure) throws JAXBException {
     	
 		for(int i=0; i<MSG_COUNT; i++) {
-			structure.setName("Call n°"+i);
 			context.createProducer()
 				.setJMSCorrelationID(UUID.randomUUID().toString())
 				.send(queue, convert.toString(structure));

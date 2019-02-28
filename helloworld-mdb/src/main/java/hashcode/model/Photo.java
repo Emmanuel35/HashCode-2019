@@ -10,6 +10,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class Photo {
 
+	public Photo() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	private Integer id;
 	private Boolean horizontal = Boolean.TRUE;
 	private List<String> tags;

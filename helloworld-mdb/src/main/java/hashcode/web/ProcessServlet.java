@@ -110,6 +110,7 @@ public class ProcessServlet extends HttpServlet {
 				.setJMSCorrelationID(UUID.randomUUID().toString())
 				.send(queue, convert.toString(structure));
 		} catch (JAXBException e) {
+			LOGGER.severe(e.getMessage());
 			throw new IOException("Can't produce JSON", e);
 		}
     }

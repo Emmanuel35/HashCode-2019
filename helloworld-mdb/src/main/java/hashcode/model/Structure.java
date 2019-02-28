@@ -14,6 +14,11 @@ public class Structure {
 	Integer score = (int) Math.abs(Math.random());
 	List<Photo> photos;
 	
+	public Structure() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	
 	public List<Photo> getPhotos() {
 		return photos;
 	}
