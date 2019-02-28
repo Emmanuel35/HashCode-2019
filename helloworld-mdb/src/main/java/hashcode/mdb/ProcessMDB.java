@@ -16,7 +16,15 @@
  */
 package hashcode.mdb;
 
+<<<<<<< Updated upstream
+=======
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
@@ -33,6 +41,9 @@ import javax.jms.TextMessage;
 import javax.xml.bind.JAXBException;
 
 import hashcode.model.ConvertModel;
+import hashcode.model.Photo;
+import hashcode.model.Score;
+import hashcode.model.Slide;
 import hashcode.model.Structure;
 
 /**
@@ -78,16 +89,72 @@ public class ProcessMDB implements MessageListener {
 				LOGGER.info("Received Message: " + msg.getJMSCorrelationID());
 
 				Structure struct = convert.toObject(msg.getText(), Structure.class);
+				
+				// Construit le slide de référence
+				Photo photoCourante = struct.getSlideCourant().get(0);
+				Slide slideCourant = new Slide();
+				slideCourant.setPremierePhoto(photoCourante);
+				
+				// Stocke tous les résultats
+				int max = 0;
+				HashMap<Integer, Slide> comparaison = new HashMap<Integer, Slide>();
+				
+				// parcours les photos restantes
+				for(Photo photo: struct.getPhotos()) {
+							
+					Slide slide = new Slide();
+					slide.setPremierePhoto(photo);
+					// calcul du score
+					Integer result = Score.computeScore(null, null);
+					comparaison.put(result, slide);
+				}
+				
+				// Publie nbValeurs en messages 
+				int nbValeurs = 5;
+				for(Integer index: comparaison.keySet().stream().sorted().collect(Collectors.toList())) {
+					if (nbValeurs-- >0) {
+						
+						Structure structure = new Structure();
+						structure.setPhotos(reste);
+						
+					}
+				}
+				
+					// tous sauf la photo courante
+						List<Photo> reste = new ArrayList<Photo>();
+						reste.addAll(struct.getPhotos());
+						reste.remove(photo);
+						
+						
+						
+						Slide slideCourant = new Slide();
+						slideCourant.setPremierePhoto(photo);
+						
+						
+						structure.setScore(
+								structure.getScore() + Score.computeScore(null, null)
+								);
+						structure.getSlideCourant().add(photo);
+						structure.getSlides().add(""+photo.getId());
+						
+						context.createProducer()
+							.setJMSCorrelationID(UUID.randomUUID().toString())
+							.send(process,convert.toString(structure));						
+					}
+				
 				if (struct.getPhotos().size() > 0)
-					context.createProducer().setJMSCorrelationID(msg.getJMSCorrelationID()).send(process,
-							convert.toString(struct));
+					context.createProducer()
+						.setJMSCorrelationID(msg.getJMSCorrelationID())
+						.send(process,convert.toString(struct));
 				else
-					context.createProducer().setJMSCorrelationID(msg.getJMSCorrelationID()).send(result,
-							convert.toString(struct));
+					context.createProducer()
+						.setJMSCorrelationID(msg.getJMSCorrelationID())
+						.send(result,convert.toString(struct));
 			} else {
 				LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
 			}
 		} catch (JMSException | JAXBException e) {
+			LOGGER.severe(e.getMessage());
 			throw new RuntimeException(e);
 		}
 

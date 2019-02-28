@@ -13,8 +13,8 @@ public class Structure {
 
 	private Integer score;
 	private List<String> slides = new ArrayList<>();
-	private List<Photo> photos;
-	private List<Photo> slideCourant;
+	private List<Photo> photos  = new ArrayList<>();
+	private List<Photo> slideCourant  = new ArrayList<>();
 	
 	public List<Photo> getSlideCourant() {
 		return slideCourant;

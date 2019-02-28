@@ -111,15 +111,27 @@ public class ProcessServlet extends HttpServlet {
 		// Tri des photos par taille de tags
 		photos.sort( (Photo p1, Photo p2) -> Integer.compare(p1.getTags().size(), p2.getTags().size()) );
 		
-		Structure structure = new Structure();
-		structure.setPhotos(photos);
-		try {
-			context.createProducer().setJMSCorrelationID(UUID.randomUUID().toString()).send(queue,
-					convert.toString(structure));
-		} catch (JAXBException e) {
-			LOGGER.severe(e.getMessage());
-			throw new IOException("Can't produce JSON", e);
-		}
+		for(Photo photo: photos)
+			try {
+				// tous sauf la photo courante
+				List<Photo> reste = new ArrayList<Photo>();
+				reste.addAll(photos);
+				reste.remove(photo);
+				
+				Structure structure = new Structure();
+				structure.setPhotos(reste);
+				structure.setScore(0);
+				structure.getSlideCourant().add(photo);
+				structure.getSlides().add(""+photo.getId());
+				
+				context.createProducer()
+					.setJMSCorrelationID(UUID.randomUUID().toString())
+					.send(queue,convert.toString(structure));
+				
+			} catch (JAXBException e) {
+				LOGGER.severe(e.getMessage());
+				throw new IOException("Can't produce JSON", e);
+			}
 	}
 
 }
