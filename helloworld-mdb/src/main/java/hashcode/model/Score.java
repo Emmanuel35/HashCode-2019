@@ -10,6 +10,7 @@ public class Score {
 		int nbUniqueTagsCurrent = 0;
 		int nbUniqueTagsNext = 0;
 		int nbUniquesCommuns = 0;
+<<<<<<< Updated upstream
 				
 		List<String> listeUniqueCurrent = new ArrayList<>(current.getTags());
 		List<String> listeUniqueNext = new ArrayList<>(next.getTags());
@@ -51,5 +52,13 @@ public class Score {
 		}
 		
 		return slide;
+=======
+		nbUniqueTagsCurrent = current.getTags().size();
+				
+		//listeTagsCommuns = current.getTags()
+		//- current.getTags().r
+		
+		return Math.min(nbUniquesCommuns, Math.min(nbUniqueTagsCurrent, nbUniqueTagsnext));
+>>>>>>> Stashed changes
 	}
 }
