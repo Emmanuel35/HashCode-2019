@@ -107,6 +107,10 @@ public class ProcessServlet extends HttpServlet {
 			photos.add(photo);
 		}
 		scanner.close();
+
+		// Tri des photos par taille de tags
+		photos.sort( (Photo p1, Photo p2) -> Integer.compare(p1.getTags().size(), p2.getTags().size()) );
+		
 		Structure structure = new Structure();
 		structure.setPhotos(photos);
 		try {
