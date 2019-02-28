@@ -18,6 +18,7 @@ package hashcode.web;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -100,7 +101,9 @@ public class Process {
     	
 		for(int i=0; i<MSG_COUNT; i++) {
 			structure.setName("Call n°"+i);
-			context.createProducer().send(queue, convert.toString(structure));
+			context.createProducer()
+				.setJMSCorrelationID(UUID.randomUUID().toString())
+				.send(queue, convert.toString(structure));
 		}
 		
     }

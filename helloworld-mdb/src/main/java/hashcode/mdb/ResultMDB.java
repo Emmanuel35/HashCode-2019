@@ -18,20 +18,19 @@ package hashcode.mdb;
 
 import java.util.logging.Logger;
 
-import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
-import javax.inject.Inject;
 import javax.jms.JMSDestinationDefinition;
 import javax.jms.JMSDestinationDefinitions;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.Queue;
 import javax.jms.TextMessage;
+import javax.xml.bind.JAXBException;
 
 import hashcode.model.ConvertModel;
+import hashcode.model.Structure;
 
 /**
  * <p>
@@ -53,10 +52,11 @@ import hashcode.model.ConvertModel;
 @MessageDriven(name = "ResultMDB", activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "queue/RESULT"),
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")})
+        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+        @ActivationConfigProperty( propertyName = "maxSession", propertyValue = "10")})
 public class ResultMDB implements MessageListener {
 
-    private static final Logger LOGGER = Logger.getLogger(ResultMDB.class.toString());
+    private Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
     @EJB
     private ConvertModel convert;
@@ -69,12 +69,14 @@ public class ResultMDB implements MessageListener {
         try {        	
             if (rcvMessage instanceof TextMessage) {
                 msg = (TextMessage) rcvMessage;
-                LOGGER.info("Received Message: " + msg.getJMSMessageID());
+                LOGGER.info("Received Message: " + msg.getJMSCorrelationID());
                 LOGGER.info("FIN pour: " + msg.getText());
+                Structure struct = convert.toObject(msg.getText(), Structure.class);
+                convert.toFile(struct, "c:/TEMP/"+struct.getScore()+"-"+msg.getJMSCorrelationID()+".xml");
             } else {
                 LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
             }
-        } catch (JMSException e) {
+        } catch (JMSException | JAXBException e) {
             throw new RuntimeException(e);
         }
         

@@ -9,9 +9,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Structure {
 	String name;
 	Integer reinject = 0; 
+	Integer score = (int) Math.abs(Math.random());
 
 	public Integer getReinject() {
 		return reinject;
+	}
+
+	public Integer getScore() {
+		return score;
+	}
+
+	public void setScore(Integer score) {
+		this.score = score;
 	}
 
 	public void setReinject(Integer reinject) {

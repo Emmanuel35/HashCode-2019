@@ -16,6 +16,7 @@
  */
 package hashcode.mdb;
 
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -56,11 +57,12 @@ import hashcode.model.Structure;
 @MessageDriven(name = "ProcessMDB", activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "queue/HELLOWORLD"),
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")})
+        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+        @ActivationConfigProperty( propertyName = "maxSession", propertyValue = "100")})
 public class ProcessMDB 
 	implements MessageListener {
 
-    private static final Logger LOGGER = Logger.getLogger(ProcessMDB.class.toString());
+	private Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
     @Resource(lookup = "java:/queue/HELLOWORLD")
     private Queue process;
@@ -83,14 +85,18 @@ public class ProcessMDB
         	
             if (rcvMessage instanceof TextMessage) {
                 msg = (TextMessage) rcvMessage;
-                LOGGER.info("Received Message: " + msg.getJMSMessageID());
-
+                LOGGER.info("Received Message: " + msg.getJMSCorrelationID());
+                
                 Structure struct = convert.toObject(msg.getText(), Structure.class);
                 struct.setReinject(struct.getReinject()-1);
                 if (struct.getReinject() > 0)
-                	context.createProducer().send(process, convert.toString(struct));
+                	context.createProducer()
+                		.setJMSCorrelationID(msg.getJMSCorrelationID())
+                		.send(process, convert.toString(struct));
                 else
-                	context.createProducer().send(result, convert.toString(struct));
+                	context.createProducer()
+                		.setJMSCorrelationID(msg.getJMSCorrelationID())
+                		.send(result, convert.toString(struct));
             } else {
                 LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
             }
