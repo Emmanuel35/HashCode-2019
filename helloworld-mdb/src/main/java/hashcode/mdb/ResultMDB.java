@@ -71,7 +71,7 @@ public class ResultMDB implements MessageListener {
                 LOGGER.info("Received Message: " + msg.getJMSCorrelationID());
                 LOGGER.info("FIN pour: " + msg.getText());
                 Structure struct = convert.toObject(msg.getText(), Structure.class);
-                convert.toFile(struct, "c:/TEMP/"+struct.getScore()+"-"+msg.getJMSCorrelationID()+".xml");
+                convert.toFile(struct, "c:/Hascode/"+struct.getScore()+"-"+msg.getJMSCorrelationID()+".xml");
             } else {
                 LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
             }
