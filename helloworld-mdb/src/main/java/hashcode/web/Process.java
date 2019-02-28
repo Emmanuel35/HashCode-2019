@@ -80,8 +80,7 @@ public class Process {
     @Resource(lookup = "java:/queue/HELLOWORLD")
     private Queue queue;
 
-    @EJB
-    private ConvertModel convert;
+    private ConvertModel convert = new ConvertModel();
     
     @POST
     @Path("/start")

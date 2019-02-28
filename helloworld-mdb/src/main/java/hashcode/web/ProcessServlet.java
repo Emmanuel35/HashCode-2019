@@ -124,9 +124,11 @@ public class ProcessServlet extends HttpServlet {
 				structure.getSlideCourant().add(photo);
 				structure.getSlides().add(""+photo.getId());
 				
-				context.createProducer()
-					.setJMSCorrelationID(UUID.randomUUID().toString())
-					.send(queue,convert.toString(structure));
+				// TODO ajouter verticales
+				if (photo.getHorizontal())
+					context.createProducer()
+						.setJMSCorrelationID(UUID.randomUUID().toString())
+						.send(queue,convert.toString(structure));
 				
 			} catch (JAXBException e) {
 				LOGGER.severe(e.getMessage());

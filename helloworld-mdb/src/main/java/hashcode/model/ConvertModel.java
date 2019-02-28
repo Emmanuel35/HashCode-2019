@@ -13,8 +13,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-@Stateless
-@LocalBean
 public class ConvertModel 
 {
 	private HashMap<Class, Marshaller> marshallers = new HashMap<Class, Marshaller>();

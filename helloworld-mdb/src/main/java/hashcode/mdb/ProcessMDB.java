@@ -16,8 +16,6 @@
  */
 package hashcode.mdb;
 
-<<<<<<< Updated upstream
-=======
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -90,79 +88,81 @@ public class ProcessMDB implements MessageListener {
 
 				Structure struct = convert.toObject(msg.getText(), Structure.class);
 				
-				// Construit le slide de référence
-				Photo photoCourante = struct.getSlideCourant().get(0);
-				Slide slideCourant = new Slide();
-				slideCourant.setPremierePhoto(photoCourante);
-				
-				// Stocke tous les résultats
-				int max = 0;
-				HashMap<Integer, Slide> comparaison = new HashMap<Integer, Slide>();
-				
-				// parcours les photos restantes
-				for(Photo photo: struct.getPhotos()) {
+				// Il reste des photos à comparer
+				if (struct.getPhotos().size() >0) {
+					// Construit le slide de référence
+					Photo photoCourante = struct.getSlideCourant().get(0);
+					Slide slideCourant = new Slide();
+					slideCourant.setPremierePhoto(photoCourante);
+					
+					// Stocke tous les résultats
+					int max = 0;
+					HashMap<Integer, Slide> comparaison = new HashMap<Integer, Slide>();
+					
+					// parcours les photos restantes
+					for(Photo photo: struct.getPhotos()) {
+						
+						// Test si horizontale
+						if (photo.getHorizontal()) {
+							Slide slide = new Slide();
+							slide.setPremierePhoto(photo);
+							LOGGER.info("Calcul entre "+slideCourant.getPremierePhoto().getId()+" et "+slide.getPremierePhoto().getId());
+							// calcul du score
+							Integer result = Score.computeScore(slideCourant, slide);
+							comparaison.put(result, slide);
+						}
+						
+						// TODO pour 2 verticales
+					}
+					
+					// Publie nbValeurs en messages 
+					int nbValeurs = 5;
+					for(Integer index: comparaison.keySet().stream().sorted().collect(Collectors.toList())) {
+						if (nbValeurs-- >0) {
 							
-					Slide slide = new Slide();
-					slide.setPremierePhoto(photo);
-					// calcul du score
-					Integer result = Score.computeScore(null, null);
-					comparaison.put(result, slide);
-				}
-				
-				// Publie nbValeurs en messages 
-				int nbValeurs = 5;
-				for(Integer index: comparaison.keySet().stream().sorted().collect(Collectors.toList())) {
-					if (nbValeurs-- >0) {
-						
-						Structure structure = new Structure();
-						structure.setPhotos(reste);
-						
+							Slide slideAsuivre = comparaison.get(index);
+							ArrayList<Photo> photosAgarder = new ArrayList<Photo>();
+							photosAgarder.add(slideAsuivre.getPremierePhoto());
+							
+							// recopie la structure en enlevant la photo courante
+							Structure newStructure = new Structure();
+							newStructure.setPhotos(struct.getPhotos());
+							newStructure.getPhotos().removeAll(photosAgarder);
+							newStructure.setScore(struct.getScore()+index);
+							
+							newStructure.setSlideCourant(photosAgarder);
+							
+							// TODO pour 2 photos
+							newStructure.getSlides().add(""+photosAgarder.get(0).getId());
+							
+							// publication 
+							context.createProducer()
+								.setJMSCorrelationID(msg.getJMSCorrelationID())
+								.send(process,convert.toString(newStructure));		
+						}
 					}
-				}
-				
-					// tous sauf la photo courante
-						List<Photo> reste = new ArrayList<Photo>();
-						reste.addAll(struct.getPhotos());
-						reste.remove(photo);
-						
-						
-						
-						Slide slideCourant = new Slide();
-						slideCourant.setPremierePhoto(photo);
-						
-						
-						structure.setScore(
-								structure.getScore() + Score.computeScore(null, null)
-								);
-						structure.getSlideCourant().add(photo);
-						structure.getSlides().add(""+photo.getId());
-						
+					
+					if (comparaison.isEmpty()) {
+						LOGGER.info("Plus rien. Envoi pour "+rcvMessage.getJMSCorrelationID());
+						// publication 
 						context.createProducer()
-							.setJMSCorrelationID(UUID.randomUUID().toString())
-							.send(process,convert.toString(structure));						
+							.setJMSCorrelationID(msg.getJMSCorrelationID())
+							.send(result,convert.toString(struct));		
 					}
-				
-				if (struct.getPhotos().size() > 0)
+				} else {
+					LOGGER.info("Resultat pour "+rcvMessage.getJMSCorrelationID());
+					// publication 
 					context.createProducer()
 						.setJMSCorrelationID(msg.getJMSCorrelationID())
-						.send(process,convert.toString(struct));
-				else
-					context.createProducer()
-						.setJMSCorrelationID(msg.getJMSCorrelationID())
-						.send(result,convert.toString(struct));
+						.send(result,convert.toString(struct));		
+				}
+					
 			} else {
 				LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
 			}
-		} catch (JMSException | JAXBException e) {
+		} catch (Exception e) {
 			LOGGER.severe(e.getMessage());
-			throw new RuntimeException(e);
 		}
 
-		try {
-			Thread.sleep(Math.round((Math.random() * 10000)));
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 }
