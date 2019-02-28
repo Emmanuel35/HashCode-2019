@@ -28,6 +28,7 @@ import javax.inject.Inject;
 import javax.jms.JMSContext;
 import javax.jms.Queue;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -59,13 +60,16 @@ import hashcode.model.Structure;
 
 /**
  * <p>
- * A simple servlet 3 as client that sends several messages to a queue or a topic.
+ * A simple servlet 3 as client that sends several messages to a queue or a
+ * topic.
  * </p>
  *
  * <p>
- * The servlet is registered and mapped to /HelloWorldMDBServletClient using the {@linkplain WebServlet
+ * The servlet is registered and mapped to /HelloWorldMDBServletClient using the
+ * {@linkplain WebServlet
+ * 
  * @HttpServlet}.
- * </p>
+ *                </p>
  *
  * @author Serge Pagop (spagop@redhat.com)
  *
@@ -73,22 +77,22 @@ import hashcode.model.Structure;
 @WebServlet("/ProcessServlet")
 public class ProcessServlet extends HttpServlet {
 
-    private static final long serialVersionUID = -8314035702649252239L;
+	private static final long serialVersionUID = -8314035702649252239L;
 
-    private static final int MSG_COUNT = 2;
+	private static final int MSG_COUNT = 2;
 
-    private Logger LOGGER = Logger.getLogger(this.getClass().getName());
-    
-    @Inject
-    private JMSContext context;
+	private Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
-    @Resource(lookup = "java:/queue/HELLOWORLD")
-    private Queue queue;
+	@Inject
+	private JMSContext context;
 
-    private ConvertModel convert = new ConvertModel();
-    
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	@Resource(lookup = "java:/queue/HELLOWORLD")
+	private Queue queue;
 
+	private ConvertModel convert = new ConvertModel();
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		Scanner scanner = new Scanner(req.getInputStream());
 		int lineCount = scanner.nextInt();
 		List<Photo> photos = new ArrayList<>();
@@ -103,16 +107,15 @@ public class ProcessServlet extends HttpServlet {
 			photos.add(photo);
 		}
 		scanner.close();
-        Structure structure = new Structure();
-        structure.setPhotos(photos);
+		Structure structure = new Structure();
+		structure.setPhotos(photos);
 		try {
-			context.createProducer()
-				.setJMSCorrelationID(UUID.randomUUID().toString())
-				.send(queue, convert.toString(structure));
+			context.createProducer().setJMSCorrelationID(UUID.randomUUID().toString()).send(queue,
+					convert.toString(structure));
 		} catch (JAXBException e) {
 			LOGGER.severe(e.getMessage());
 			throw new IOException("Can't produce JSON", e);
 		}
-    }
+	}
 
 }
