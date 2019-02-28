@@ -16,26 +16,27 @@
  */
 package hashcode.web;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
-import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.jms.JMSContext;
 import javax.jms.Queue;
-import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.JAXBException;
 
 import hashcode.model.ConvertModel;
+import hashcode.model.Photo;
+import hashcode.model.Structure;
 
 /**
  * Definition of the two JMS destinations used by the quickstart
@@ -88,26 +89,29 @@ public class ProcessServlet extends HttpServlet {
     
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-    	String body = null;
-        StringBuilder stringBuilder = new StringBuilder();
-        BufferedReader bufferedReader = null;
-        
-    	InputStream inputStream = req.getInputStream();
-        if (inputStream != null) {
-            bufferedReader = new BufferedReader(new InputStreamReader(req.getInputStream()));
-            char[] charBuffer = new char[128];
-            int bytesRead = -1;
-            while ((bytesRead = bufferedReader.read(charBuffer)) > 0) {
-                stringBuilder.append(charBuffer, 0, bytesRead);
-            }
-        } else {
-            stringBuilder.append("");
-        }
-		
-        context.createProducer()
-			.setJMSCorrelationID(UUID.randomUUID().toString())
-			.send(queue, stringBuilder.toString());
-        
+		Scanner scanner = new Scanner(req.getInputStream());
+		int lineCount = scanner.nextInt();
+		List<Photo> photos = new ArrayList<>();
+		for (int i = 0; i < lineCount; i++) {
+			String orientation = scanner.next();
+			int tagCount = scanner.nextInt();
+			List<String> tags = new ArrayList<>();
+			for (int j = 0; j < tagCount; j++) {
+				tags.add(scanner.next());
+			}
+			Photo photo = new Photo(i, "H".equals(orientation) ? Boolean.TRUE : Boolean.FALSE, tags);
+			photos.add(photo);
+		}
+		scanner.close();
+        Structure structure = new Structure();
+        structure.setPhotos(photos);
+		try {
+			context.createProducer()
+				.setJMSCorrelationID(UUID.randomUUID().toString())
+				.send(queue, convert.toString(structure));
+		} catch (JAXBException e) {
+			throw new IOException("Can't produce JSON", e);
+		}
     }
 
 }
