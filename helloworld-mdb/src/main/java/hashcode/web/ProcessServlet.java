@@ -36,6 +36,7 @@ import javax.xml.bind.JAXBException;
 
 import hashcode.model.ConvertModel;
 import hashcode.model.Photo;
+import hashcode.model.Score;
 import hashcode.model.Slide;
 import hashcode.model.Structure;
 
@@ -125,10 +126,12 @@ public class ProcessServlet extends HttpServlet {
 				structure.getSlides().add(""+photo.getId());
 				
 				// TODO ajouter verticales
-				if (photo.getHorizontal())
+				if (photo.getHorizontal()) {
+					LOGGER.info("Publication Horizontale:"+photo.getId());
 					context.createProducer()
 						.setJMSCorrelationID(UUID.randomUUID().toString())
 						.send(queue,convert.toString(structure));
+				}
 				
 			} catch (JAXBException e) {
 				LOGGER.severe(e.getMessage());
@@ -151,6 +154,11 @@ public class ProcessServlet extends HttpServlet {
 		ArrayList<Photo> aPublier = new ArrayList<Photo>();
 		
 		Slide slideVertical = new Slide();
+		slideVertical = Score.getNextVerticalSlide(photos);
+		
+		if (slideVertical == null)
+			return;
+		
 		ArrayList<Photo> photosSlide = new ArrayList<Photo>();
 		photosSlide.add(slideVertical.getPremierePhoto());
 		photosSlide.add(slideVertical.getSecondePhoto());
@@ -161,7 +169,9 @@ public class ProcessServlet extends HttpServlet {
 		structure.setPhotos(aPublier);
 		structure.setScore(0);
 		structure.setSlideCourant(photosSlide);
-		structure.getSlides().add(""+slideVertical.toString());
+		structure.getSlides().add(slideVertical.toString());
+		
+		LOGGER.info("Publication Verticale:"+slideVertical.toString());
 		
 		context.createProducer()
 				.setJMSCorrelationID(UUID.randomUUID().toString())

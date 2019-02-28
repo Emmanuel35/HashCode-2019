@@ -177,6 +177,8 @@ public class ProcessMDB implements MessageListener {
 		ArrayList<Photo> aPublier = new ArrayList<Photo>();
 		
 		Slide slideVertical = new Slide();
+		slideVertical = Score.getNextVerticalSlide(photos);
+		
 		ArrayList<Photo> photosSlide = new ArrayList<Photo>();
 		photosSlide.add(slideVertical.getPremierePhoto());
 		photosSlide.add(slideVertical.getSecondePhoto());
