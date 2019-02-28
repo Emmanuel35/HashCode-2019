@@ -87,8 +87,7 @@ public class ProcessMDB
                 LOGGER.info("Received Message: " + msg.getJMSCorrelationID());
                 
                 Structure struct = convert.toObject(msg.getText(), Structure.class);
-                struct.setReinject(struct.getReinject()-1);
-                if (struct.getReinject() > 0)
+                if (struct.getPhotos().size() > 0)
                 	context.createProducer()
                 		.setJMSCorrelationID(msg.getJMSCorrelationID())
                 		.send(process, convert.toString(struct));
