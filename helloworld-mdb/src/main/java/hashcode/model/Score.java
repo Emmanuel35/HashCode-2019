@@ -29,4 +29,27 @@ public class Score {
 		
 		return Math.min(nbUniquesCommuns, Math.min(nbUniqueTagsCurrent, nbUniqueTagsNext));
 	}
+	
+	public static Slide getNextVerticalSlide(List<Photo> liste) {
+		Slide slide = null;
+		boolean trouve = false;
+		Photo first = null;
+		Photo second = null;
+		//liste de photos
+		for (Photo photo : liste) {
+			if(first == null && !photo.getHorizontal()) {
+				first = photo;
+			}else if(first != null && !photo.getHorizontal()) {
+				second = photo;
+				trouve = false;
+			}
+		}
+		if(trouve) {
+			slide = new Slide();
+			slide.setPremierePhoto(first);
+			slide.setSecondePhoto(second);			
+		}
+		
+		return slide;
+	}
 }
