@@ -28,7 +28,6 @@ import javax.inject.Inject;
 import javax.jms.JMSContext;
 import javax.jms.Queue;
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -37,6 +36,7 @@ import javax.xml.bind.JAXBException;
 
 import hashcode.model.ConvertModel;
 import hashcode.model.Photo;
+import hashcode.model.Slide;
 import hashcode.model.Structure;
 
 /**
@@ -134,6 +134,42 @@ public class ProcessServlet extends HttpServlet {
 				LOGGER.severe(e.getMessage());
 				throw new IOException("Can't produce JSON", e);
 			}
+		
+		try {
+			publishVerticalMessages(photos);
+		} catch (JAXBException e) {
+			LOGGER.severe(e.getMessage());
+		}
+	}
+
+	/**
+	 * Publie un message Vertical
+	 * @param photos
+	 * @throws JAXBException
+	 */
+	private void publishVerticalMessages(List<Photo> photos) throws JAXBException {
+		ArrayList<Photo> aPublier = new ArrayList<Photo>();
+		
+		Slide slideVertical = new Slide();
+		ArrayList<Photo> photosSlide = new ArrayList<Photo>();
+		photosSlide.add(slideVertical.getPremierePhoto());
+		photosSlide.add(slideVertical.getSecondePhoto());
+		
+		aPublier.removeAll(photosSlide);
+		
+		Structure structure = new Structure();
+		structure.setPhotos(aPublier);
+		structure.setScore(0);
+		structure.setSlideCourant(photosSlide);
+		structure.getSlides().add(""+slideVertical.toString());
+		
+		context.createProducer()
+				.setJMSCorrelationID(UUID.randomUUID().toString())
+				.send(queue, convert.toString(structure));
+		
+		// Envoie du reste
+		if (!aPublier.isEmpty())
+			publishVerticalMessages(aPublier);
 	}
 
 }

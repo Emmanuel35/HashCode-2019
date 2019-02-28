@@ -133,7 +133,7 @@ public class ProcessMDB implements MessageListener {
 							newStructure.setSlideCourant(photosAgarder);
 							
 							// TODO pour 2 photos
-							newStructure.getSlides().add(""+photosAgarder.get(0).getId());
+							newStructure.getSlides().add(slideAsuivre.toString());
 							
 							// publication 
 							context.createProducer()
@@ -164,5 +164,35 @@ public class ProcessMDB implements MessageListener {
 			LOGGER.severe(e.getMessage());
 		}
 
+	}
+	
+	/**
+	 * Publie un message Vertical
+	 * @param photos
+	 * @throws JAXBException
+	 */
+	private HashMap<Integer, Slide> compareVerticalMessages(List<Photo> photos) throws JAXBException {
+		HashMap<Integer, Slide> resultat = new HashMap<Integer, Slide>();
+		
+		ArrayList<Photo> aPublier = new ArrayList<Photo>();
+		
+		Slide slideVertical = new Slide();
+		ArrayList<Photo> photosSlide = new ArrayList<Photo>();
+		photosSlide.add(slideVertical.getPremierePhoto());
+		photosSlide.add(slideVertical.getSecondePhoto());
+		
+		aPublier.removeAll(photosSlide);
+		
+		Structure structure = new Structure();
+		structure.setPhotos(aPublier);
+		structure.setScore(0);
+		structure.setSlideCourant(photosSlide);
+		structure.getSlides().add(slideVertical.toString());
+		
+//		if (!aPublier.isEmpty())
+//			return resultat.putAll(compareVerticalMessages(aPublier));
+//		else
+//			return 
+		return null;
 	}
 }

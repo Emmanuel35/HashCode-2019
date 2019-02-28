@@ -5,6 +5,19 @@ import java.util.List;
 
 public class Slide {
 	
+	@Override
+	public String toString() {
+		if (premierePhoto == null)
+			return "";
+		
+		if (secondePhoto == null)
+			return ""+premierePhoto.getId();
+		
+		if (secondePhoto != null)
+			return ""+premierePhoto.getId() + " " + secondePhoto.getId();
+		
+		return "";
+	}
 	private Photo premierePhoto;
 	
 	private Photo secondePhoto;
