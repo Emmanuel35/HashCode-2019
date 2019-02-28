@@ -67,8 +67,7 @@ public class ProcessMDB
     @Resource(lookup = "java:/queue/HELLOWORLD")
     private Queue process;
     
-    @EJB
-    private ConvertModel convert;
+    private ConvertModel convert = new ConvertModel();
     
     @Resource(lookup = "java:/queue/RESULT")
     private Queue result;

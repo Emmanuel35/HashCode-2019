@@ -58,8 +58,7 @@ public class ResultMDB implements MessageListener {
 
     private Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
-    @EJB
-    private ConvertModel convert;
+    private ConvertModel convert = new ConvertModel();
     
     /**
      * @see MessageListener#onMessage(Message)
