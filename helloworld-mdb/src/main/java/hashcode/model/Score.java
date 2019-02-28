@@ -22,7 +22,6 @@ public class Score {
 		// on retire ce qui est commun
 		listeUniqueNext.removeAll(current.getTags());
 		
-		
 		nbUniqueTagsCurrent = listeUniqueCurrent.size();
 		nbUniqueTagsNext = listeUniqueNext.size();
 		nbUniquesCommuns = listeCommune.size();
@@ -49,7 +48,6 @@ public class Score {
 			slide.setPremierePhoto(first);
 			slide.setSecondePhoto(second);			
 		}
-		
 		return slide;
 	}
 }
