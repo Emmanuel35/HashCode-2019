@@ -14,7 +14,16 @@ public class Structure {
 	private Integer score;
 	private List<String> slides = new ArrayList<>();
 	private List<Photo> photos;
+	private List<Photo> slideCourant;
 	
+	public List<Photo> getSlideCourant() {
+		return slideCourant;
+	}
+
+	public void setSlideCourant(List<Photo> slideCourant) {
+		this.slideCourant = slideCourant;
+	}
+
 	public List<String> getSlides() {
 		return slides;
 	}
