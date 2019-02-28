@@ -10,12 +10,11 @@ public class Score {
 		int nbUniqueTagsCurrent = 0;
 		int nbUniqueTagsNext = 0;
 		int nbUniquesCommuns = 0;
-		nbUniqueTagsCurrent = current.getTags().size();
 				
-		List<String> listeUniqueCurrent = new ArrayList<String>(current.getTags());
-		List<String> listeUniqueNext = new ArrayList<String>(next.getTags());
-		List<String> listeCommune = new ArrayList<String>(current.getTags());
-		List<String> tempListe = new ArrayList<String>(next.getTags());
+		List<String> listeUniqueCurrent = new ArrayList<>(current.getTags());
+		List<String> listeUniqueNext = new ArrayList<>(next.getTags());
+		List<String> listeCommune = new ArrayList<>(current.getTags());
+		List<String> tempListe = new ArrayList<>(next.getTags());
 		listeCommune.retainAll(tempListe);
 		
 		// on retire ce qui est commun

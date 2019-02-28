@@ -3,6 +3,3 @@
 .settings
 .project
 target
-/helloworld-mdb/.checkstyle
-/helloworld-mdb/.classpath
-/helloworld-mdb/.settings/org.eclipse.wst.common.component

@@ -9,7 +9,7 @@ public class Slide {
 	
 	private Photo secondePhoto;
 	
-	private List<String> tags = new ArrayList<String>();
+	private List<String> tags = new ArrayList<>();
 	
 	public Photo getPremierePhoto() {
 		return premierePhoto;
