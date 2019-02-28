@@ -24,7 +24,6 @@ import java.nio.charset.Charset;
 import java.util.logging.Logger;
 
 import javax.ejb.ActivationConfigProperty;
-import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
 import javax.jms.JMSDestinationDefinition;
 import javax.jms.JMSDestinationDefinitions;

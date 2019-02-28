@@ -16,12 +16,10 @@
  */
 package hashcode.mdb;
 
-import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
-import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
 import javax.inject.Inject;
 import javax.jms.JMSContext;
