@@ -18,6 +18,7 @@ package hashcode.mdb;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -68,14 +69,12 @@ public class ResultMDB implements MessageListener {
 		try {
 			if (rcvMessage instanceof TextMessage) {
 				msg = (TextMessage) rcvMessage;
-				LOGGER.info("Received Message: " + msg.getJMSCorrelationID());
-				LOGGER.info("FIN pour: " + msg.getText());
-				Structure struct = convert.toObject(msg.getText(), Structure.class);
-				try (BufferedOutputStream out = IOUtils.buffer(new FileOutputStream(new File(
-						"c:/Hascode/result_" + struct.getScore() + "-" + msg.getJMSCorrelationID() + ".txt")))) {
-					IOUtils.write(struct.getSlides().size() + "\r\n", out, Charset.defaultCharset());
-					IOUtils.writeLines(struct.getSlides(), "\r\n", out, Charset.defaultCharset());
-				}
+				String correlationId = msg.getJMSCorrelationID();
+				LOGGER.info("Received Message: " + correlationId);
+				String inputTest = msg.getText();
+				LOGGER.info("FIN pour: " + inputTest);
+				Structure struct = convert.toObject(inputTest, Structure.class);
+				writeStructure("c:/Hascode", correlationId, struct);
 			} else {
 				LOGGER.warning("Message of wrong type: " + rcvMessage.getClass().getName());
 			}
@@ -88,6 +87,14 @@ public class ResultMDB implements MessageListener {
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+
+	protected void writeStructure(String path, String correlationId, Structure struct) throws IOException, FileNotFoundException {
+		try (BufferedOutputStream out = IOUtils.buffer(new FileOutputStream(new File(
+				path + "/result_" + struct.getScore() + "-" + correlationId + ".txt")))) {
+			IOUtils.write(struct.getSlides().size() + "\r\n", out, Charset.defaultCharset());
+			IOUtils.writeLines(struct.getSlides(), "\r\n", out, Charset.defaultCharset());
 		}
 	}
 }
